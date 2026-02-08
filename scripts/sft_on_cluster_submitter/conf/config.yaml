@@ -1,0 +1,116 @@
+# ─────────────────────────────────────────────────────────────
+# File: conf/config.yaml  (single flexible config)
+# ─────────────────────────────────────────────────────────────
+# Keep working directory stable; multirun outputs go here if you sweep later.
+hydra:
+  run:
+    dir: ./misc/submitter_artifacts
+  sweep:
+    dir: ./misc/submitter_artifacts/multirun/${now:%Y%m%d_%H%M%S}
+    subdir: ${hydra.job.num}
+
+# Global toggles
+fail_fast: true   # stop on first failed experiment
+dry_run: false    # set true to print commands only
+jobs: ALL  # comma list or YAML list of exp names; or ALL
+local_run: false
+
+# Metadata available to interpolation contexts
+meta:
+  # run_id: ${now:%y%m%d-%H%M%S}
+  run_id: ${now:%y%m%d}
+  artifact_root: ./misc/submitter_artifacts
+
+
+# 1) Shared args for *all* jobs. You can put anything here.
+#    Values can be strings, numbers, bools, or lists (lists become comma-joined).
+#    Set a key to null in an exp override to remove it from the final CLI.
+base_args:
+  _cluster_param:
+    scheduler: null # torchx scheduler args
+    scheduler_args: null # torchx scheduler args, see `cluster_scripts/cluster.md`
+    app: cluster_scripts/cluster.py:train
+    host: gpu_80g_pool
+    nnodes: 1
+    nproc_per_node: 8
+    max_retries: 1
+    script: ./cluster_scripts/setup_and_run.sh
+    # either use string or list of strings (e.g., ["python", "src/sft/train.py"])
+    program: ["python", "src/sft/train.py"]
+    config_file: src/sft/configs/train/qwen3_0_6b-full_sft.yaml # can be none
+    name: null
+    dry_run: ${dry_run}
+
+  # data
+  model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-0.6B
+  template: qwen3
+
+  # dataset
+  dataset_dir: null
+  dataset: null # list or str
+  eval_dataset: null # list or str
+
+  # Training hyperparams
+  # HF trainer args: https://huggingface.co/docs/transformers/en/main_classes/trainer#transformers.TrainingArguments
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 1
+  learning_rate: 1.0e-5
+  weight_decay: 0.01
+
+  num_train_epochs: 1.0
+  # max_steps: 100000 # exluded with num_train_epochs
+  # warmup_ratio: 500
+  warmup_ratio: 0.01 # int or float, float is ratio of total steps
+
+  # save_strategy: epoch
+  save_strategy: steps
+  save_steps: 0.1
+  save_total_limit: 3 # keep last 3 checkpoints to ensure resuming
+
+  eval_strategy: steps
+  eval_steps: 0.1 # If smaller than 1, will be interpreted as ratio of total training steps.
+
+  # cutoff_len: 6144
+
+  # add sep token
+  add_special_tokens: "<|SEP|>"
+
+  # Output path can depend on exp_name and job_name at runtime
+  _output_base_dir: /mnt/workspace/svg_glyph_llm/saves/
+  _exp_name: null
+  _job_name: null
+  output_dir: null # Should be none, override by job_args key
+
+  flash_attn: fa2
+  eval_on_start: false
+  eval_on_each_dataset: true
+  log_level: info
+
+  # [NOTE] be aware of the thinking
+  enable_thinking: false
+
+  pure_bf16: false
+
+  disable_gradient_checkpointing: false
+
+  # Number of workers for dataset converting and tokenizing
+  preprocessing_num_workers: 48
+
+# fsdp: https://huggingface.co/docs/transformers/en/main_classes/trainer#transformers.TrainingArguments.fsdp
+# "full_shard": Shard parameters, gradients and optimizer states.
+# "shard_grad_op": Shard optimizer states and gradients.
+# "hybrid_shard": Apply FULL_SHARD within a node, and replicate parameters across nodes.
+# "hybrid_shard_zero2": Apply SHARD_GRAD_OP within a node, and replicate parameters across nodes.
+# "offload": Offload parameters and gradients to CPUs (only compatible with "full_shard" and "shard_grad_op").
+# "auto_wrap": Automatically recursively wrap layers with FSDP using default_auto_wrap_policy.
+
+# 2) Experiment-specific overrides. Each value is merged into base_args.
+#    Use null (~) to delete a key from the final argument list.
+# job_args:
+#   dummy:
+#     model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-1.7B
+#     template: qwen3
+
+# base_args._cluster_param.scheduler_args=\'conda_pkg_id=REDACTED,clusterOncall=REDACTED,resourceAttribution=REDACTED,tags=REDACTED,modelTypeName=REDACTED\'
+# base_args._cluster_param.host=gpu_80g_pool # gpu_any_pool, gpu_pool_gt, gpu_80g_ib, gpu_80g_alt, gpu_a100_pool
+# dry_run=true

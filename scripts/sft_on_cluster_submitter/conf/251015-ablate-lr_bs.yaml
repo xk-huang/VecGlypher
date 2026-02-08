@@ -1,0 +1,88 @@
+# ─────────────────────────────────────────────────────────────
+# File: conf/config.yaml  (single flexible config)
+# ─────────────────────────────────────────────────────────────
+defaults:
+  - config
+  - _self_
+
+# 2) Experiment-specific overrides. Each value is merged into base_args.
+#    Use null (~) to delete a key from the final argument list.
+job_args:
+  # epoch 5
+  bs_32-lr_1e-5:
+    model_name_or_path: /mnt/workspace/hf_downloads/google/gemma-3-4b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 1
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 5.0
+    warmup_ratio: 0.01
+    save_steps: 0.1
+    eval_steps: 0.1
+
+  # epoch 5
+  bs_128-lr_1e-5:
+    model_name_or_path: /mnt/workspace/hf_downloads/google/gemma-3-4b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 5.0
+    warmup_ratio: 0.01
+    save_steps: 0.1
+    eval_steps: 0.1
+
+  bs_128-lr_2e-5:
+    model_name_or_path: /mnt/workspace/hf_downloads/google/gemma-3-4b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 5.0
+    warmup_ratio: 0.01
+    save_steps: 0.1
+    eval_steps: 0.1
+
+    learning_rate: 2e-5

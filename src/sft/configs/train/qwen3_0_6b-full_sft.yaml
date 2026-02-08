@@ -1,0 +1,61 @@
+### model
+model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-0.6B
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: full
+deepspeed: null  # choices: [ds_z0_config.json, ds_z2_config.json, ds_z3_config.json]
+
+### dataset
+dataset: alphanumeric-train_fonts
+template: qwen3
+cutoff_len: 65536 # NOTE: should be larger than the longest sample, or gets cut off
+max_samples: null
+overwrite_cache: true
+preprocessing_num_workers: 16
+dataloader_num_workers: 4
+dataset_dir: src/sft/data # change dataset dir contains `dataset_info.json`
+data_shared_file_system: true # we use storage_cli, a shared file system.
+
+### output
+output_dir: /mnt/workspace/svg_glyph_llm/saves/debug/qwen3_0_6b-full_sft
+logging_steps: 10
+save_strategy: "epoch" # choices: [no, epoch, steps, best]
+# save_steps: 500
+# save_total_limit: 5
+plot_loss: true
+overwrite_output_dir: false
+save_only_model: false
+report_to: tensorboard  # choices: [none, wandb, tensorboard, swanlab, mlflow]
+
+### train
+# trainer args: https://huggingface.co/docs/transformers/en/main_classes/trainer#transformers.TrainingArguments
+per_device_train_batch_size: 1 # 8 gpu x 8 bs x 1 acc = 8 bs
+gradient_accumulation_steps: 1
+learning_rate: 1.0e-5
+num_train_epochs: 5.0
+max_steps: -1 # overwrites num_train_epochs if specified
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+warmup_steps: 0 # overwrites warmup_ratio if specified
+bf16: true
+pure_bf16: false # use bf16 for mixed precision training
+# ref: https://github.com/huggingface/trl/blob/46d09bd2408f17605409fb3ee8ba12705add7faa/trl/trainer/sft_config.py#L113C22-L113C29
+
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+
+### eval
+eval_dataset: alphanumeric-ood_fonts
+# val_size: 0.1
+per_device_eval_batch_size: 1
+eval_strategy: epoch # choices ['no', 'steps', 'epoch'] (transformers.utils.generic)
+# eval_steps: 500
+
+# local train: llamafactory-cli train src/sft/configs/a_z-300_fonts-no_style-qwen3_4b-full_sft.yaml
+
+### add new tokens
+add_tokens: null
+add_special_tokens: null

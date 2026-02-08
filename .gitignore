@@ -1,0 +1,24 @@
+/third_party
+/data
+/misc
+/mnt
+
+*.pyc
+
+/outputs
+/saves
+/cache
+
+hf_cache/
+ms_cache/
+om_cache/
+generated_predictions.jsonl
+predictions_score.json
+
+# custom for CoM
+# .interactive_torchrun.sh
+# Delete it by yourself. Otherwise,
+# we cannot get the file on CLUSTER during interactive run.
+
+.env
+.torchxconfig

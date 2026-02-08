@@ -1,0 +1,98 @@
+# ─────────────────────────────────────────────────────────────
+# File: conf/config.yaml  (single flexible config)
+# ─────────────────────────────────────────────────────────────
+defaults:
+  - config
+  - _self_
+
+# 2) Experiment-specific overrides. Each value is merged into base_args.
+#    Use null (~) to delete a key from the final argument list.
+job_args:
+  Qwen3-32B:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-32B
+    template: qwen3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed_envato/filtered_sft/250903-envato-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+    # dataset info:
+    # num_samples: 2147691
+    # max_seq_len: 2800
+
+    per_device_train_batch_size: 4
+    # memory peak: 99.84%-100%
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+
+  gemma-3-27b-it:
+    model_name_or_path: /mnt/workspace/hf_downloads/google/gemma-3-27b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed_envato/filtered_sft/250903-envato-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+
+  Qwen2_5-Coder-32B-Instruct:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen2.5-Coder-32B-Instruct
+    template: qwen
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+    # fsdp: hybrid_shard_zero2 auto_wrap
+    # fsdp_transformer_layer_cls_to_wrap: Qwen3DecoderLayer
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed_envato/filtered_sft/250903-envato-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+
+  Llama-3_3-70B-Instruct:
+    model_name_or_path: /mnt/workspace/hf_downloads/meta-llama/Llama-3.3-70B-Instruct
+    template: llama3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed_envato/filtered_sft/250903-envato-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false

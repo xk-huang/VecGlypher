@@ -1,0 +1,102 @@
+# ─────────────────────────────────────────────────────────────
+# File: conf/config.yaml  (single flexible config)
+# ─────────────────────────────────────────────────────────────
+defaults:
+  - config
+  - _self_
+
+# 2) Experiment-specific overrides. Each value is merged into base_args.
+#    Use null (~) to delete a key from the final argument list.
+job_args:
+  # NOTE: copy this exp from 250914-envato-ablate_scale
+  # Qwen3-1_7B:
+  #   model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-1.7B
+  #   template: qwen3
+
+  #   deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+  #   # fsdp: hybrid_shard_zero2 auto_wrap
+  #   # fsdp_transformer_layer_cls_to_wrap: Qwen3DecoderLayer
+
+  #   # dataset info:
+  #   # num_samples: 146354
+  #   # max_seq_len: 1000
+
+  #   per_device_train_batch_size: 4
+  #   # bs=1, A100, 170 W, 30/30 GB
+  #   # bs=2, A100, 280-330 W, 40/30 GB; w/ckpt + bf16 weight + grad accum, 50 GB; w/ckpt + bf16 weight, 40GB
+  #   # bs=3, A100, 280-330 W, 70/50 GB;
+  #   gradient_accumulation_steps: 1
+  #   _cluster_param:
+  #     # [NOTE]: TBD
+  #     nnodes: 4
+  #     nproc_per_node: 8
+
+  #   # speed up training
+  #   disable_gradient_checkpointing: false
+
+  #   # Default mixture
+  #   dataset: "train_font_family"
+  #   eval_dataset: "ood_font_family_decon"
+
+  Qwen3-1_7B-lr_decay_0_1:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-1.7B
+    template: qwen3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+    # fsdp: hybrid_shard_zero2 auto_wrap
+    # fsdp_transformer_layer_cls_to_wrap: Qwen3DecoderLayer
+
+    # dataset info:
+    # num_samples: 146354
+    # max_seq_len: 1000
+
+    per_device_train_batch_size: 4
+    # bs=1, A100, 170 W, 30/30 GB
+    # bs=2, A100, 280-330 W, 40/30 GB; w/ckpt + bf16 weight + grad accum, 50 GB; w/ckpt + bf16 weight, 40GB
+    # bs=3, A100, 280-330 W, 70/50 GB;
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      # [NOTE]: TBD
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    # Default mixture
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    # lr schedule
+    lr_scheduler_type: cosine_with_min_lr
+    lr_scheduler_kwargs:
+      min_lr_rate: 0.1
+
+  Qwen3-1_7B-bs_256:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-1.7B
+    template: qwen3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+    # fsdp: hybrid_shard_zero2 auto_wrap
+    # fsdp_transformer_layer_cls_to_wrap: Qwen3DecoderLayer
+
+    # dataset info:
+    # num_samples: 146354
+    # max_seq_len: 1000
+
+    per_device_train_batch_size: 4
+    # bs=1, A100, 170 W, 30/30 GB
+    # bs=2, A100, 280-330 W, 40/30 GB; w/ckpt + bf16 weight + grad accum, 50 GB; w/ckpt + bf16 weight, 40GB
+    # bs=3, A100, 280-330 W, 70/50 GB;
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      # [NOTE]: TBD
+      nnodes: 8
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    # Default mixture
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"

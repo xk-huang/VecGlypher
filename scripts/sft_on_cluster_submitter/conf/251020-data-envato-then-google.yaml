@@ -1,0 +1,175 @@
+# ─────────────────────────────────────────────────────────────
+# File: conf/config.yaml  (single flexible config)
+# ─────────────────────────────────────────────────────────────
+
+# python scripts/sft_on_cluster_submitter/submit.py -cn 251020-data-envato-then-google base_args._cluster_param.scheduler_args=\'conda_pkg_id=REDACTED,clusterOncall=REDACTED,resourceAttribution=REDACTED,tags=REDACTED,modelTypeName=REDACTED\'
+
+defaults:
+  - config
+  - _self_
+
+
+base_args:
+  _cluster_param:
+    scheduler: null # torchx scheduler args
+    scheduler_args: conda_pkg_id=REDACTED # torchx scheduler args, see `cluster_scripts/cluster.md`
+    # host: gpu_any_pool
+
+  # eval takes a long time for envato data
+  # eval_steps: 0.25 # If smaller than 1, will be interpreted as ratio of total training steps.
+  learning_rate: 2e-5
+
+# 2) Experiment-specific overrides. Each value is merged into base_args.
+#    Use null (~) to delete a key from the final argument list.
+job_args:
+  gemma-3-27b-it-envato_fonts-num_epochs_1:
+    model_name_or_path: /mnt/workspace/svg_glyph_llm/saves/251014-data-envato/gemma-3-27b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 1.0
+    warmup_ratio: 0.01
+    save_steps: 0.5
+    eval_steps: 0.5
+
+  gemma-3-27b-it-abs_coord-envato_fonts-num_epochs_1:
+    model_name_or_path: /mnt/workspace/svg_glyph_llm/saves/251014-data-envato/gemma-3-27b-it-abs_coord
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250910-alphanumeric-abs_coord
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 1.0
+    warmup_ratio: 0.01
+    save_steps: 0.5
+    eval_steps: 0.5
+
+  # epoch 3
+  gemma-3-27b-it-envato_fonts-num_epochs_3:
+    model_name_or_path: /mnt/workspace/svg_glyph_llm/saves/251014-data-envato/gemma-3-27b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 3.0
+    warmup_ratio: 0.01
+    save_steps: 0.1666666667
+    eval_steps: 0.1666666667
+
+  gemma-3-27b-it-abs_coord-envato_fonts-num_epochs_3:
+    model_name_or_path: /mnt/workspace/svg_glyph_llm/saves/251014-data-envato/gemma-3-27b-it-abs_coord
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250910-alphanumeric-abs_coord
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 3.0
+    warmup_ratio: 0.01
+    save_steps: 0.1666666667
+    eval_steps: 0.1666666667
+
+  # epoch 5
+  gemma-3-27b-it-envato_fonts-num_epochs_5:
+    model_name_or_path: /mnt/workspace/svg_glyph_llm/saves/251014-data-envato/gemma-3-27b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 5.0
+    warmup_ratio: 0.01
+    save_steps: 0.1
+    eval_steps: 0.1
+
+  gemma-3-27b-it-abs_coord-envato_fonts-num_epochs_5:
+    model_name_or_path: /mnt/workspace/svg_glyph_llm/saves/251014-data-envato/gemma-3-27b-it-abs_coord
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250910-alphanumeric-abs_coord
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 5.0
+    warmup_ratio: 0.01
+    save_steps: 0.1
+    eval_steps: 0.1

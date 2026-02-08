@@ -1,0 +1,115 @@
+# ─────────────────────────────────────────────────────────────
+# File: conf/config.yaml  (single flexible config)
+# ─────────────────────────────────────────────────────────────
+defaults:
+  - config
+  - _self_
+
+# 2) Experiment-specific overrides. Each value is merged into base_args.
+#    Use null (~) to delete a key from the final argument list.
+job_args:
+  gemma-3-27b-it-wo_envato_pt-gfont_ft_1_epoch:
+    model_name_or_path: /mnt/workspace/hf_downloads/google/gemma-3-27b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+    # dataset info:
+    # num_samples: 138731
+    # max_seq_len: 1300
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    num_train_epochs: 1.0
+    warmup_ratio: 0.05
+    save_steps: 0.5
+    eval_steps: 0.5
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+
+  gemma-3-27b-it-envato_pt_1_epoch-gfont_ft_1_epoch:
+    model_name_or_path: /mnt/workspace/svg_glyph_llm/saves/250915-envato-upper_bound/gemma-3-27b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    num_train_epochs: 1.0
+    warmup_ratio: 0.05
+    save_steps: 0.5
+    eval_steps: 0.5
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+
+  gemma-3-27b-it-wo_envato_pt-gfont_ft_5_epoch:
+    model_name_or_path: /mnt/workspace/hf_downloads/google/gemma-3-27b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    num_train_epochs: 5.0
+    warmup_ratio: 0.01
+    save_steps: 0.1
+    eval_steps: 0.2
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+
+  gemma-3-27b-it-envato_pt_1_epoch-gfont_ft_5_epoch:
+    model_name_or_path: /mnt/workspace/svg_glyph_llm/saves/250915-envato-upper_bound/gemma-3-27b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    num_train_epochs: 5.0
+    warmup_ratio: 0.01
+    save_steps: 0.1
+    eval_steps: 0.2
+
+    # speed up training
+    disable_gradient_checkpointing: false

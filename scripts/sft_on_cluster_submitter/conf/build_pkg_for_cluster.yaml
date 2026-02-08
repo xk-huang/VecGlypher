@@ -1,0 +1,56 @@
+# ─────────────────────────────────────────────────────────────
+# File: conf/config.yaml  (single flexible config)
+# ─────────────────────────────────────────────────────────────
+# Keep working directory stable; multirun outputs go here if you sweep later.
+hydra:
+  run:
+    dir: ./misc/submitter_artifacts
+  sweep:
+    dir: ./misc/submitter_artifacts/multirun/${now:%Y%m%d_%H%M%S}
+    subdir: ${hydra.job.num}
+
+# Global toggles
+fail_fast: true   # stop on first failed experiment
+dry_run: true    # set true to print commands only
+jobs: ALL  # comma list or YAML list of exp names; or ALL
+local_run: false
+
+# Metadata available to interpolation contexts
+meta:
+  # run_id: ${now:%y%m%d-%H%M%S}
+  run_id: ${now:%y%m%d}
+  artifact_root: ./misc/submitter_artifacts
+
+
+# 1) Shared args for *all* jobs. You can put anything here.
+#    Values can be strings, numbers, bools, or lists (lists become comma-joined).
+#    Set a key to null in an exp override to remove it from the final CLI.
+base_args:
+  _cluster_param:
+    scheduler: null # torchx scheduler args
+    scheduler_args: null # torchx scheduler args, see `cluster_scripts/cluster.md`
+    app: cluster_scripts/cluster.py:train
+    host: gpu_80g_pool
+    nnodes: 1
+    nproc_per_node: 8
+    max_retries: 1
+    script: ./cluster_scripts/setup_and_run_only_local_rank_zero.sh
+    # either use string or list of strings (e.g., ["python", "src/sft/train.py"])
+    program: ["bash", "-c", "echo", "'PLEASE OVERRIDE base_args._cluster_param.program'"]
+    config_file: null
+    name: null
+    dry_run: ${dry_run}
+
+  # Output path can depend on exp_name and job_name at runtime
+  # NOTE: not used for eval; only used for training
+  _output_base_dir: /mnt/workspace/svg_glyph_llm/saves/
+  _exp_name: null
+  _job_name: null
+  output_dir: null # Should be none, override by job_args key
+
+# 2) Experiment-specific overrides. Each value is merged into base_args.
+#    Use null (~) to delete a key from the final argument list.
+# job_args:
+#   dummy:
+#     model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-1.7B
+#     template: qwen3

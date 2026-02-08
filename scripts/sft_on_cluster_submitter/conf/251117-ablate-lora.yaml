@@ -1,0 +1,134 @@
+# ─────────────────────────────────────────────────────────────
+# File: conf/config.yaml  (single flexible config)
+# ─────────────────────────────────────────────────────────────
+
+# python scripts/sft_on_cluster_submitter/submit.py -cn 251117-ablate-lora base_args._cluster_param.scheduler_args=\'conda_pkg_id=REDACTED,clusterOncall=REDACTED,resourceAttribution=REDACTED,tags=REDACTED,modelTypeName=REDACTED\'
+
+defaults:
+  - config
+  - _self_
+
+# 2) Experiment-specific overrides. Each value is merged into base_args.
+#    Use null (~) to delete a key from the final argument list.
+job_args:
+  # epoch 3
+  4b-rel_coord:
+    model_name_or_path: /mnt/workspace/hf_downloads/google/gemma-3-4b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 1
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 3.0
+    warmup_ratio: 0.01
+    save_steps: 0.1666666667
+    eval_steps: 0.1666666667
+
+    finetuning_type: lora
+    lora_rank: 64
+    lora_target: all
+
+
+
+  4b-abs_coord:
+    model_name_or_path: /mnt/workspace/hf_downloads/google/gemma-3-4b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250910-alphanumeric-abs_coord/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 1
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 3.0
+    warmup_ratio: 0.01
+    save_steps: 0.1666666667
+    eval_steps: 0.1666666667
+
+    finetuning_type: lora
+    lora_rank: 64
+    lora_target: all
+
+
+
+  27b-rel_coord:
+    model_name_or_path: /mnt/workspace/hf_downloads/google/gemma-3-27b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250903-alphanumeric/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 2
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 2
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 3.0
+    warmup_ratio: 0.01
+    save_steps: 0.1666666667
+    eval_steps: 0.1666666667
+
+    finetuning_type: lora
+    lora_rank: 64
+    lora_target: all
+
+
+  27b-abs_coord:
+    model_name_or_path: /mnt/workspace/hf_downloads/google/gemma-3-27b-it
+    template: gemma3
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+
+    # dataset
+    dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/filtered_sft/250910-alphanumeric-abs_coord/
+    dataset: "train_font_family"
+    eval_dataset: "ood_font_family_decon"
+
+    per_device_train_batch_size: 1
+    gradient_accumulation_steps: 2
+    _cluster_param:
+      nnodes: 2
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: false
+
+    num_train_epochs: 3.0
+    warmup_ratio: 0.01
+    save_steps: 0.1666666667
+    eval_steps: 0.1666666667
+
+    finetuning_type: lora
+    lora_rank: 64
+    lora_target: all

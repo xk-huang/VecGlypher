@@ -1,0 +1,5 @@
+[flake8]
+max_line_length = 120
+ignore = W503,E203,D1,D205,D212,D415,D411,D200
+docstring-convention = google
+per-file-ignores = __init__.py:F401

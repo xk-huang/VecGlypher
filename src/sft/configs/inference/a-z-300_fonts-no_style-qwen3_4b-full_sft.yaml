@@ -1,0 +1,6 @@
+model_name_or_path: saves/llama3-8b/full/sft/checkpoint-500
+template: qwen3
+infer_backend: vllm # choices: [huggingface, vllm, sglang]
+trust_remote_code: true
+
+# local test: llamafactory-cli chat src/sft/configs/inference/a-z-300_fonts-no_style-qwen3_4b-full_sft.yaml

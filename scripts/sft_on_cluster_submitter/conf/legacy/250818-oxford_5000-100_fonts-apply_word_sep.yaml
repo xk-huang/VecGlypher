@@ -1,0 +1,110 @@
+# ─────────────────────────────────────────────────────────────
+# File: conf/config.yaml  (single flexible config)
+# ─────────────────────────────────────────────────────────────
+# Keep working directory stable; multirun outputs go here if you sweep later.
+hydra:
+  run:
+    dir: ./misc/submitter_artifacts
+  sweep:
+    dir: ./misc/submitter_artifacts/multirun/${now:%Y%m%d_%H%M%S}
+    subdir: ${hydra.job.num}
+
+# Global toggles
+fail_fast: true   # stop on first failed experiment
+dry_run: false    # set true to print commands only
+jobs: ALL  # comma list or YAML list of exp names; or ALL
+local_run: false
+
+# Metadata available to interpolation contexts
+meta:
+  # run_id: ${now:%y%m%d-%H%M%S}
+  run_id: ${now:%y%m%d}
+  artifact_root: ./misc/submitter_artifacts
+
+
+# 1) Shared args for *all* jobs. You can put anything here.
+#    Values can be strings, numbers, bools, or lists (lists become comma-joined).
+#    Set a key to null in an exp override to remove it from the final CLI.
+base_args:
+  _cluster_param:
+    app: cluster_scripts/cluster.py:train
+    host: tc_any
+    nnodes: 2
+    nproc_per_node: 8
+    max_retries: 5
+    script: ./cluster_scripts/setup_and_run.sh
+    # either use string or list of strings (e.g., ["python", "src/sft/train.py"])
+    program: ["python", "src/sft/train.py"]
+    config_file: src/sft/configs/train/qwen3_0_6b-full_sft.yaml
+
+  # Paths
+  dataset_dir: /mnt/workspace/svg_glyph_llm/data/processed/sft/250814-oxford_5000-100_fonts-apply_word_sep
+  # Default mixture
+  dataset: ["train-sample_100", "train-alphanumeric"]
+  eval_dataset: ["ood_test-sample_30-contents_600", "ood_test-alphanumeric"]
+
+  # Training hyperparams
+  # HF trainer args: https://huggingface.co/docs/transformers/en/main_classes/trainer#transformers.TrainingArguments
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 1
+  learning_rate: 5.0e-5
+  weight_decay: 0.01
+
+  # num_train_epochs: 5.0
+  max_steps: 100000
+  warmup_steps: 500
+
+  save_strategy: steps
+  save_steps: 500
+
+  eval_strategy: steps
+  eval_steps: 0.1
+
+  # cutoff_len: 6144
+
+  # add sep token
+  add_special_tokens: "<|SEP|>"
+
+  # Output path can depend on exp_name at runtime
+  _output_base_dir: /mnt/workspace/svg_glyph_llm/saves/
+  # [NOTE] Change this to your own output dir
+  _exp_name: 250814-oxford_5000-100_fonts-apply_word_sep
+  _job_name: debug
+  output_dir: null
+
+# 2) Experiment-specific overrides. Each value is merged into base_args.
+#    Use null (~) to delete a key from the final argument list.
+# fsdp: https://huggingface.co/docs/transformers/en/main_classes/trainer#transformers.TrainingArguments.fsdp
+job_args:
+  4b:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-4B
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 2
+    _cluster_param:
+      nnodes: 1
+      nproc_per_node: 8
+
+  8b:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-8B
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+
+    per_device_train_batch_size: 2
+    gradient_accumulation_steps: 2
+    _cluster_param:
+      nnodes: 2
+      nproc_per_node: 8
+
+  # 32b:
+  #   model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-32B
+
+  #   deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+
+  #   per_device_train_batch_size: 1
+  #   gradient_accumulation_steps: 1
+  #   _cluster_param:
+  #     nnodes: 4
+  #     nproc_per_node: 8

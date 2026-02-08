@@ -1,0 +1,121 @@
+# ─────────────────────────────────────────────────────────────
+# File: conf/config.yaml  (single flexible config)
+# ─────────────────────────────────────────────────────────────
+defaults:
+  - config
+  - _self_
+
+# 2) Experiment-specific overrides. Each value is merged into base_args.
+#    Use null (~) to delete a key from the final argument list.
+job_args:
+  Qwen3-4B-Instruct-2507:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-4B-Instruct-2507
+    template: qwen3_nothink
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+    # fsdp: hybrid_shard_zero2 auto_wrap
+    # fsdp_transformer_layer_cls_to_wrap: Qwen3DecoderLayer
+
+    # dataset info:
+    # num_samples: 146354
+    # max_seq_len: 1000
+
+    per_device_train_batch_size: 2
+    # bs=1, A100, 170 W, 30/30 GB
+    # bs=2, A100, 280-330 W, 40/30 GB; w/ckpt + bf16 weight + grad accum, 50 GB; w/ckpt + bf16 weight, 40GB
+    # bs=3, A100, 280-330 W, 70/50 GB;
+    gradient_accumulation_steps: 2
+    _cluster_param:
+      nnodes: 1
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: true
+
+  Qwen3-4B-Base:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-4B-Base
+    template: qwen3_nothink
+
+    deepspeed: src/sft/configs/deepspeed/ds_z2_config.json
+    # fsdp: hybrid_shard_zero2 auto_wrap
+    # fsdp_transformer_layer_cls_to_wrap: Qwen3DecoderLayer
+
+    # dataset info:
+    # num_samples: 146354
+    # max_seq_len: 1000
+
+    per_device_train_batch_size: 2
+    # bs=1, A100, 170 W, 30/30 GB
+    # bs=2, A100, 280-330 W, 40/30 GB; w/ckpt + bf16 weight + grad accum, 50 GB; w/ckpt + bf16 weight, 40GB
+    # bs=3, A100, 280-330 W, 70/50 GB;
+    gradient_accumulation_steps: 2
+    _cluster_param:
+      nnodes: 1
+      nproc_per_node: 8
+
+    # speed up training
+    disable_gradient_checkpointing: true
+
+
+  Qwen3-30B-A3B-Instruct-2507:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-30B-A3B-Instruct-2507
+    template: qwen3_nothink
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+    # fsdp: hybrid_shard auto_wrap
+    # fsdp_transformer_layer_cls_to_wrap: Qwen3MoeDecoderLayer
+
+    per_device_train_batch_size: 4
+    # bs=1, A100, 100 W, 50-70 GB
+    # bs=2, A100, 100 W, 60-80 GB; +grad accum, OOM
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # eval takes about half an hour
+    eval_steps: 0.25
+    # save per hour
+    save_steps: 500
+
+  Qwen3-30B-A3B-Base:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-30B-A3B-Base
+    template: qwen3_nothink
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+    # fsdp: hybrid_shard auto_wrap
+    # fsdp_transformer_layer_cls_to_wrap: Qwen3MoeDecoderLayer
+
+    per_device_train_batch_size: 4
+    # bs=1, A100, 100 W, 50-70 GB
+    # bs=2, A100, 100 W, 60-80 GB; +grad accum, OOM
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # eval takes about half an hour
+    eval_steps: 0.25
+    # save per hour
+    save_steps: 500
+
+  Qwen3-Coder-30B-A3B-Instruct:
+    model_name_or_path: /mnt/workspace/hf_downloads/Qwen/Qwen3-Coder-30B-A3B-Instruct
+    template: qwen3_nothink
+
+    deepspeed: src/sft/configs/deepspeed/ds_z3_config.json
+    # fsdp: hybrid_shard auto_wrap
+    # fsdp_transformer_layer_cls_to_wrap: Qwen3MoeDecoderLayer
+
+    per_device_train_batch_size: 4
+    # bs=1, A100, 100 W, 50-70 GB
+    # bs=2, A100, 100 W, 60-80 GB; +grad accum, OOM
+    gradient_accumulation_steps: 1
+    _cluster_param:
+      nnodes: 4
+      nproc_per_node: 8
+
+    # eval takes about half an hour
+    eval_steps: 0.25
+    # save per hour
+    save_steps: 500
