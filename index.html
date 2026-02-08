@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VecGlypher | Project Page | CVPR 2026</title>
+  <meta name="description" content="VecGlypher: Unified Vector Glyph Generation with Language Models. Official project page summary with method, data, results, and citation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="ambient-shape shape-a" aria-hidden="true"></div>
+  <div class="ambient-shape shape-b" aria-hidden="true"></div>
+
+  <header class="hero reveal">
+    <p class="kicker">CVPR 2026</p>
+    <h1>VecGlypher: Unified Vector Glyph Generation with Language Models</h1>
+    <p class="authors">
+      <a href="https://xk-huang.github.io/">Xiaoke Huang</a><sup>1,2,*</sup>, <a href="https://bhavul.com/website/">Bhavul Gauri</a><sup>1</sup>, <a href="https://kamwoh.github.io/">Kam Woh Ng</a><sup>1</sup>, <a href="https://tonyng.vision/">Tony Ng</a><sup>1</sup>,
+      <a href="https://xumengmeng.com/">Mengmeng Xu</a><sup>1</sup>, <a href="https://johanan528.github.io/">Zhiheng Liu</a><sup>1</sup>, <a href="https://cs.uwaterloo.ca/~w2ren/">Weiming Ren</a><sup>1</sup>, <a href="https://zhaochongan.github.io/">Zhaochong An</a><sup>1</sup>,
+      <a href="https://sites.google.com/view/zijian-zhou/home">Zijian Zhou</a><sup>1</sup>, <a href="http://haonanqiu.com/">Haonan Qiu</a><sup>1</sup>, <a href="https://yuyinzhou.github.io/">Yuyin Zhou</a><sup>2</sup>, <a href="https://senhe.github.io/">Sen He</a><sup>1</sup>,
+      <a href="https://www.linkedin.com/in/zihengwang/">Ziheng Wang</a><sup>1</sup>, <a href="https://www.surrey.ac.uk/people/tao-xiang">Tao Xiang</a><sup>1</sup>, <a href="https://brandonhan.uk/">Xiao Han</a><sup>1</sup>
+    </p>
+    <p class="affiliations"><sup>1</sup>Meta AI &nbsp; <sup>2</sup>UC Santa Cruz &nbsp; <sup>*</sup>Work done at Meta</p>
+    <p class="date">February 7, 2026</p>
+    <div class="hero-actions">
+      <a href="assets/VecGlypher.pdf" class="btn btn-primary">Paper (PDF)</a>
+      <a href="assets/VecGlypher.pdf" class="btn btn-primary">arXiv</a>
+      <a href="https://github.com/xk-huang/VecGlypher" class="btn btn-primary">Code</a>
+      <a href="#results" class="btn btn-secondary">Results</a>
+      <a href="#citation" class="btn btn-secondary">Citation</a>
+    </div>
+  </header>
+
+  <main>
+    <section id="takeaways" class="panel reveal">
+      <h2>Key Takeaways</h2>
+      <ul class="takeaways">
+        <li>Unified LLM formulation handles both text and image conditioning with one decoding interface.</li>
+        <li>Model scale and staged supervision are critical for stable, high-fidelity SVG generation.</li>
+        <li>Absolute-coordinate serialization is consistently strongest at larger model sizes.</li>
+        <li>Direct vector decoding avoids raster artifacts and keeps outputs editable for design workflows.</li>
+        <li>General-purpose LLMs that can draw SVG icons still struggle to produce typographically valid glyphs and to follow style instructions for glyph generation.</li>
+        <p class="section-note">
+        We argues this is a domain-data gap: glyph programs are underrepresented in standard LLM corpora.
+        A practical reason is that most real font data is distributed in binary files (for example <code>.ttf</code> and
+        <code>.otf</code>) rather than directly exposed as text-like SVG path programs. This highlights a current
+        generalization boundary of LLMs.
+      </p>
+      </ul>
+
+    </section>
+
+    <section id="abstract" class="panel reveal">
+      <h2>Abstract</h2>
+      <p>
+        VecGlypher is a single multimodal language model that generates editable SVG glyph outlines directly from
+        either natural-language style prompts or reference glyph images. Instead of relying on raster intermediates
+        and post-vectorization, it autoregressively emits path tokens in one pass. The training recipe combines
+        large-scale continuation on noisy Envato fonts with post-training on expert-tagged Google Fonts, alongside
+        typography-aware preprocessing for stable long-sequence decoding.
+      </p>
+    </section>
+
+
+
+    <section id="overview" class="panel reveal">
+      <h2>Unified Generation Modes</h2>
+      <div class="cards two-col">
+        <article class="card">
+          <h3>Text-Referenced</h3>
+          <p>Input: style tags + target character.</p>
+          <code class="code-chip">"Active, Cute, Vintage" + "V"</code>
+          <p>Output: a valid SVG path that matches requested style and content.</p>
+        </article>
+        <article class="card">
+          <h3>Image-Referenced</h3>
+          <p>Input: 1-8 exemplar glyph images + target character.</p>
+          <code class="code-chip">[ref glyphs] + "V"</code>
+          <p>Output: style-consistent target glyph with closed, editable outlines.</p>
+        </article>
+      </div>
+      <figure class="media-figure">
+        <img src="assets/figure_1.png" alt="Figure 1 from VecGlypher paper showing image-referenced and text-referenced vector glyph generation examples.">
+        <figcaption>Figure 1. VecGlypher generation examples for image-referenced and text-referenced settings.</figcaption>
+      </figure>
+    </section>
+
+    <section id="method" class="panel reveal">
+      <h2>Method at a Glance</h2>
+      <div class="pipeline">
+        <article class="step">
+          <h3>1. Data Curation</h3>
+          <p>Filter malformed and duplicate fonts, normalize coordinate systems, keep only SVG path geometry, and quantize to one decimal.</p>
+        </article>
+        <article class="step">
+          <h3>2. Two-Stage Training</h3>
+          <p>Stage 1 (Envato, text-referenced): learn SVG syntax and long-horizon geometry. Stage 2 (Google Fonts, text+image): align style conditioning with geometry.</p>
+        </article>
+        <article class="step">
+          <h3>3. Autoregressive Decoding</h3>
+          <p>A single multimodal LLM predicts SVG tokens directly. No raster denoiser or vector post-optimizer is required.</p>
+        </article>
+      </div>
+      <div class="media-grid two-col">
+        <figure class="media-figure">
+          <img src="assets/figure_2.png" alt="Figure 2 paradigm comparison between prior methods and the unified VecGlypher LLM approach.">
+          <figcaption>Figure 2. Paradigm comparisons: prior pipelines versus unified VecGlypher formulation.</figcaption>
+        </figure>
+        <figure class="media-figure">
+          <img src="assets/figure_3.png" alt="Figure 3 showing VecGlypher pipeline and two-stage training recipe.">
+          <figcaption>Figure 3. VecGlypher pipeline and two-stage training recipe.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="data" class="panel reveal">
+      <h2>Data Scale</h2>
+      <div class="cards three-col">
+        <article class="card stat">
+          <h3>After Filtering</h3>
+          <p><strong>Google Fonts:</strong> 2,497 fonts</p>
+          <p><strong>Envato:</strong> 39,497 fonts</p>
+        </article>
+        <article class="card stat">
+          <h3>Font Families</h3>
+          <p><strong>Google:</strong> 1,117 families</p>
+          <p><strong>Envato:</strong> 23,543 families</p>
+        </article>
+        <article class="card stat">
+          <h3>Glyph Instances</h3>
+          <p><strong>Google:</strong> 157,899</p>
+          <p><strong>Envato:</strong> 2,495,363</p>
+        </article>
+      </div>
+      <figure class="media-figure">
+        <img src="assets/table_5.png" alt="Table 5 from VecGlypher paper summarizing dataset statistics and tag distributions for Google Fonts and Envato.">
+        <figcaption>Table 5. Dataset statistics and vocabulary/length distribution analysis.</figcaption>
+      </figure>
+    </section>
+
+    <section id="results" class="panel reveal">
+      <h2>Quantitative Results (Cross-Family OOD)</h2>
+      <p class="section-note">
+        VecGlypher outperforms both general-purpose LLMs on text-referenced generation and dedicated vector-font
+        baselines on image-referenced generation.
+      </p>
+
+      <div class="table-wrap">
+        <h3>Text-Referenced Comparison (Table 8)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>R-ACC ↑</th>
+              <th>CD ↓</th>
+              <th>DINO ↑</th>
+              <th>FID ↓</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Claude Sonnet 4.5</td>
+              <td>46.65</td>
+              <td>5.28</td>
+              <td>88.31</td>
+              <td>19.59</td>
+            </tr>
+            <tr>
+              <td>GPT-5</td>
+              <td>43.98</td>
+              <td>6.12</td>
+              <td>86.92</td>
+              <td>29.00</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>VecGlypher 27B (T,I,A)</td>
+              <td>100.5</td>
+              <td>1.72</td>
+              <td>94.22</td>
+              <td>3.46</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>VecGlypher 70B (T,A)</td>
+              <td>100.4</td>
+              <td>1.68</td>
+              <td>94.28</td>
+              <td>3.34</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap">
+        <h3>Image-Referenced Comparison (Table 9)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>R-ACC ↑</th>
+              <th>CD ↓</th>
+              <th>DINO ↑</th>
+              <th>FID ↓</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>DeepVecFont-v2</td>
+              <td>37.86</td>
+              <td>14.58</td>
+              <td>79.41</td>
+              <td>115.5</td>
+            </tr>
+            <tr>
+              <td>DualVector</td>
+              <td>49.20</td>
+              <td>16.45</td>
+              <td>79.57</td>
+              <td>105.5</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>VecGlypher 27B (T,I,A)</td>
+              <td>99.12</td>
+              <td>1.18</td>
+              <td>95.82</td>
+              <td>2.32</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="media-grid two-col">
+        <figure class="media-figure">
+          <img src="assets/figure_6.png" alt="Figure 6 qualitative comparison for text-referenced generation between general LLMs and VecGlypher.">
+          <figcaption>Figure 6. Text-referenced qualitative comparisons against general LLMs.</figcaption>
+        </figure>
+        <figure class="media-figure">
+          <img src="assets/figure_7.png" alt="Figure 7 qualitative comparison for image-referenced generation between baselines and VecGlypher.">
+          <figcaption>Figure 7. Image-referenced qualitative comparisons against vector-font baselines.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+
+
+    <section id="citation" class="panel reveal">
+      <h2>Citation</h2>
+      <pre><code id="bibtex">@article{VecGlypher,
+  title     = {VecGlypher: Unified Vector Glyph Generation with Language Models},
+  author    = {Huang, Xiaoke and Gauri, Bhavul and Ng, Kam Woh and Ng, Tony and Xu, Mengmeng and Liu, Zhiheng and Ren, Weiming and An, Zhaochong and Zhou, Zijian and Qiu, Haonan and Zhou, Yuyin and He, Sen and Wang, Ziheng and Xiang, Tao and Han, Xiao},
+  journal   = {arXiv preprint arXiv},
+  year      = {2026}
+}</code></pre>
+      <button class="btn btn-secondary copy-btn" type="button" data-copy-target="bibtex">Copy BibTeX</button>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>This page is the project page of <a href="assets/VecGlypher.pdf">VecGlypher</a>. For full details, please read the paper.</p>
+  </footer>
+
+  <script src="assets/main.js"></script>
+</body>
+</html>
