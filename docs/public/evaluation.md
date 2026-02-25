@@ -9,6 +9,10 @@ python -m src.eval.svg2img_dir outputs/infer_decoded outputs/infer_decoded-img_b
 python -m src.eval.score_img_eval outputs/infer_decoded outputs/infer_decoded-img_base64-predict outputs/infer_decoded-img_base64-label outputs/results_img_eval
 ```
 
+We provide the model weight at HF: https://huggingface.co/VecGlypher/VecGlypher-27b-it
+
+And the evaluation results at HF: https://huggingface.co/datasets/VecGlypher/VecGlypher-Visualization
+
 ## Prequisites
 
 ```bash

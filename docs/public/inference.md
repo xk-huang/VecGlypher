@@ -2,6 +2,8 @@
 
 For example of inference and evaluation, please refer to the [evaluation doc](evaluation.md).
 
+We provide the model weight at HF: https://huggingface.co/VecGlypher/VecGlypher-27b-it
+
 ## Interactive chat
 
 ```bash

@@ -1,3 +1,12 @@
+# Data
+
+We release the processed datasets for training and evaluation.
+
+Google Fonts (training and evluation): https://huggingface.co/datasets/VecGlypher/Google-Fonts-Dataset
+
+Note on Envato Fonts: For license considerations, Envato Fonts are not included in the release, but the processing scripts are provided for users to build the datasets on their own. You can also use [MyFont](https://www.cs.rochester.edu/u/tchen45/font/font.html) as an alternative source of textual descriptions for font data ([quick link](https://drive.google.com/open?id=10GRqLu6-1JPXI8rcq23S4-4AhB6On-L6), [HF mirror](https://huggingface.co/datasets/VecGlypher/MyFont-Mirror)).
+
+
 # Data Preparation
 
 Dataset tools live under `src/svg_glyph_gen_v2/`. End-to-end pipelines are in
